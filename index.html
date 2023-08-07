@@ -1,0 +1,290 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Compass Calibration</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="css/bootstrap.min.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=2">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body onload="calc_all()">
+  <div class="container">
+    <h1>Compass Calibration</h1>
+
+    <form id="mainForm">
+      <div class="form-group row">
+        <label for="inputYear" class="col-sm-2 col-form-label" >Year</label>
+        <div class="col-sm-2">
+          <input type="text" class="form-control" id="inputYear" value="2020" oninput="el_change()" required pattern="[0-9]{4}">
+        </div>
+        <label for="inputMonth" class="col-sm-2 col-form-label">Month</label>
+        <div class="col-sm-2">
+          <input type="text" class="form-control" id="inputMonth" value="07" oninput="el_change()" required pattern="[0-9]{1,2}">
+        </div>
+        <label for="inputDay" class="col-sm-2 col-form-label">Day</label>
+        <div class="col-sm-2">
+          <input type="text" class="form-control" id="inputDay" value="18" oninput="el_change()" required pattern="[0-9]{1,2}">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="inputZone" class="col-sm-2 col-form-label">Time Zone</label>
+        <div class="col-sm-2">
+          <input type="number" class="form-control" id="inputZone" value="-4" aria-describedby="zoneHelp" oninput="el_change()" required step="0.25" min="-12" max="14">
+          <small id="zoneHelp" class="form-text text-muted">
+            UTC offset
+          </small>
+        </div>
+        <label for="inputVariation" class="col-sm-2 col-form-label">Magnetic Variation</label>
+        <div class="col-sm-2">
+          <input type="number" class="form-control" id="inputVariation" value="12" aria-describedby="variationHelp" oninput="el_change()" required step="0.1" min="-45" max="45">
+          <small id="variationHelp" class="form-text text-muted">
+            Positive for West
+          </small>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="inputLatDeg" class="col-sm-2 col-form-label">Latitude</label>
+        <div class="col-sm-10 col-lg-6">
+          <div class="input-group">
+            <input type="number" class="form-control" id="inputLatDeg" value="39" oninput="el_change()" required step="1" min="-90" max="90"><span class="form-annot">&deg;</span>
+            <input type="number" class="form-control" id="inputLatMin" value="7.10" oninput="el_change()" required step=".01" min="0" max="59.99"><span class="form-annot">&apos;</span>
+            <small id="latHelp" class="form-text text-muted">
+              Positive for North
+            </small>
+          </div>
+
+        </div>
+
+      </div>
+      <div class="form-group row">
+        <label for="inputLonDeg" class="col-sm-2 col-form-label">Longitude</label>
+        <div class="col-sm-10 col-lg-6">
+          <div class="input-group">
+            <input type="number" class="form-control" id="inputLonDeg" value="-76" oninput="el_change()" required step="1" min="-180" max="180"><span class="form-annot">&deg;</span>
+            <input type="number" class="form-control" id="inputLonMin" value="10.2" oninput="el_change()" required step=".01" min="0" max="59.99"><span class="form-annot">&apos;</span>
+            <small id="latHelp" class="form-text text-muted">
+              Positive for East
+            </small>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-group row">
+        <div class="col-sm-10 col-lg-6">
+            <button type="button" class="btn btn-primary" onclick="capture_time_loc()" >Capture Location, Date and Time</button>
+        </div>
+
+        <div class="col-sm-10 col-lg-6">
+          <input type="checkbox" id="show_details" value="1" oninput="show_hide_details()" checked="true"> <label for="show_details">Show Details</label>
+        </div>
+      </div>
+
+
+
+    </form>
+<div class="alert alert-danger" role="alert" id="errorDate" style="display:none">Invalid date/time detected. Please check all date and time fields and make corrections.</div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>(H) &deg;C</th>
+          <th>Local Time</th>
+          <th class="detail-col">Time UTC</th>
+          <th>RRB&deg;T</th>
+          <th class="detail-col">RB&deg;T</th>
+          <th class="detail-col">H+RB&deg;C</th>
+          <th class="detail-col">Zn&deg;T</th>
+          <th class="detail-col">Zn&deg;M</th>
+          <th>Deviation&deg;</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span id="0_h">000</span></td>
+          <td><input id="0_time" type="text" class="form-control timeinput" size="6" maxlength="8" value="093033" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="0_utc"></span></td>
+          <td><input id="0_rrb" type="text" class="form-control" size="4" maxlength="3" value="290" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="0_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="0_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="0_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="0_azm"></span></td>
+          <td><span class="tval" id="0_dev"></span></td>
+        </tr>
+
+        <tr>
+          <td><span id="1_h">045</span></td>
+          <td><input id="1_time" type="text" class="form-control" size="6" maxlength="8" value="091608" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="1_utc"></span></td>
+          <td><input id="1_rrb" type="text" class="form-control" size="3" maxlength="3" value="241" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="1_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="1_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="1_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="1_azm"></span></td>
+          <td><span class="tval" id="1_dev"></span></td>
+        </tr>
+
+        <tr>
+          <td><span id="2_h">090</span></td>
+          <td><input id="2_time" type="text" class="form-control" size="6" maxlength="8" value="091812" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="2_utc"></span></td>
+          <td><input id="2_rrb" type="text" class="form-control" size="3" maxlength="3" value="193" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="2_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="2_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="2_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="2_azm"></span></td>
+          <td><span class="tval" id="2_dev"></span></td>
+        </tr>
+
+        <tr>
+          <td><span id="3_h">135</span></td>
+          <td><input id="3_time" type="text" class="form-control" size="6" maxlength="8" value="092031" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="3_utc"></span></td>
+          <td><input id="3_rrb" type="text" class="form-control" size="3" maxlength="3" value="145" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="3_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="3_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="3_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="3_azm"></span></td>
+          <td><span class="tval" id="3_dev"></span></td>
+        </tr>        
+
+        <tr>
+          <td><span id="4_h">180</span></td>
+          <td><input id="4_time" type="text" class="form-control" size="6" maxlength="8" value="092219" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="4_utc"></span></td>
+          <td><input id="4_rrb" type="text" class="form-control" size="3" maxlength="3" value="101" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="4_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="4_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="4_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="4_azm"></span></td>
+          <td><span class="tval" id="4_dev"></span></td>
+        </tr>
+
+        <tr>
+          <td><span id="5_h">225</span></td>
+          <td><input id="5_time" type="text" class="form-control" size="6" maxlength="8" value="092441" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="5_utc"></span></td>
+          <td><input id="5_rrb" type="text" class="form-control" size="3" maxlength="3" value="063" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="5_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="5_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="5_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="5_azm"></span></td>
+          <td><span class="tval" id="5_dev"></span></td>
+        </tr>
+
+        <tr>
+          <td><span id="6_h">270</span></td>
+          <td><input id="6_time" type="text" class="form-control" size="6" maxlength="8" value="092635" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="6_utc"></span></td>
+          <td><input id="6_rrb" type="text" class="form-control" size="3" maxlength="3" value="021" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="6_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="6_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="6_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="6_azm"></span></td>
+          <td><span class="tval" id="6_dev"></span></td>
+        </tr>
+
+        <tr>
+          <td><span id="7_h">315</span></td>
+          <td><input id="7_time" type="text" class="form-control" size="6" maxlength="8" value="092837" oninput="el_change()" required pattern="[0-9]{6}"/></td>
+          <td class="detail-col"><span class="tval" id="7_utc"></span></td>
+          <td><input id="7_rrb" type="text" class="form-control" size="3" maxlength="3" value="338" oninput="el_change()" required pattern="[0-9]{3}"/></td>
+          <td class="detail-col"><span class="tval" id="7_rb"></span></td>
+          <td class="detail-col"><span class="tval" id="7_hrb"></span></td>
+          <td class="detail-col"><span class="tval" id="7_azt"></span></td>
+          <td class="detail-col"><span class="tval" id="7_azm"></span></td>
+          <td><span class="tval" id="7_dev"></span></td>
+        </tr>                
+
+      </tbody>
+    </table>
+    <h2 id="deviation-table">Deviation Table</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Ship's Heading &deg;M</th>
+          <th>Deviation&deg;</th>
+          <th>Ship's Heading &deg;C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tval" id="d0_hm"></span></td>
+          <td><span class="tval" id="d0_d"></span></td>
+          <td><span class="tval" id="d0_hc">000</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d1_hm"></span></td>
+          <td><span class="tval" id="d1_d"></span></td>
+          <td><span class="tval" id="d1_hc">045</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d2_hm"></span></td>
+          <td><span class="tval" id="d2_d"></span></td>
+          <td><span class="tval" id="d2_hc">090</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d3_hm"></span></td>
+          <td><span class="tval" id="d3_d"></span></td>
+          <td><span class="tval" id="d3_hc">135</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d4_hm"></span></td>
+          <td><span class="tval" id="d4_d"></span></td>
+          <td><span class="tval" id="d4_hc">280</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d5_hm"></span></td>
+          <td><span class="tval" id="d5_d"></span></td>
+          <td><span class="tval" id="d5_hc">225</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d6_hm"></span></td>
+          <td><span class="tval" id="d6_d"></span></td>
+          <td><span class="tval" id="d6_hc">270</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d7_hm"></span></td>
+          <td><span class="tval" id="d7_d"></span></td>
+          <td><span class="tval" id="d7_hc">315</span></td>
+        </tr>
+        <tr>
+          <td><span class="tval" id="d8_hm"></span></td>
+          <td><span class="tval" id="d8_d"></span></td>
+          <td><span class="tval" id="d8_hc">360</span></td>
+        </tr>                                                                
+      </tbody>
+    </table>
+
+    <div class="row">
+      <canvas id="myChart" width="100%" ></canvas>
+    </div>
+
+    <p><strong>Notes:</strong><br />
+      <ul>
+        <li><strong>Development under progress</strong> Always check all calculations</li>
+        <li>Solar angle calculations based on <a href="https://gml.noaa.gov/grad/solcalc/">NOAA Solar Calculator</a> and <a href="https://gml.noaa.gov/grad/solcalc/calcdetails.html">associated documentation</a></li>
+        <li>Based on <a href="https://youtu.be/iIRLTyp8vhg?t=744">video and instructions</a> from Captain Tom Tursi</li>
+        <li>Version 2.2 (2023-08-07) Link to <a href="./v1">old version</a>
+      </ul>
+      
+    </p>
+  </div>
+
+
+  <script src="js/luxon.min.js"></script>
+  <script src="js/modernizr-3.12.0.min.js"></script>
+  <script src="js/noaacalc.js"></script>
+  <script src="js/suncalc.js"></script>
+  <script src="js/app.js?v=22"></script>
+  <script src="js/chart.umd.js"></script>
+  <script src="js/magvar.js"></script>
+
+</body>
+
+</html>

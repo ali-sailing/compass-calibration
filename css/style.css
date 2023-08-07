@@ -1,0 +1,29 @@
+.form-annot {
+  font-size: 1.5em;
+  margin-left: .2em;
+  margin-right: .3em;
+}
+table thead tr {
+  background-color: #009879;
+  color: #ffffff;
+}
+.form-control {
+  color: black;
+}
+.tval {
+  font-size: 1.2em;
+}
+.myChartDiv {
+  max-width: 600px;
+  max-height: 400px;
+}
+.container input {
+  min-width: 60px;   /* depends how much minimum width you require */
+}
+.container input.timeinput{
+  min-width: 85px;   /* depends how much minimum width you require */
+}
+
+@media print {
+  #deviation-table {page-break-before: always;}
+} 
