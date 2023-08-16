@@ -8,6 +8,12 @@ function to_deg (angle) {
   return angle * (180 / Math.PI);
 }
 
+function sort_by(field) {
+  return function(a, b) {
+     return (a[field] > b[field]) - (a[field] < b[field])
+  };
+}
+
 
 function pad(n, width, z) {
   z = z || '0';
@@ -130,10 +136,12 @@ function calc_all() {
   const d_000 = data[0].dev_precise, d_045 = data[1].dev_precise, d_090 = data[2].dev_precise, d_135 = data[3].dev_precise, d_180 = data[4].dev_precise;
   const d_225 = data[5].dev_precise, d_270 = data[6].dev_precise, d_315 = data[7].dev_precise;
   const a_val = a_sum / 8.0;
-  const b_val = (d_090 + -1.0 * d_270) / 2.0;
-  const c_val = (d_000 + -1.0 * d_180) / 2.0;
-  const d_val = (d_045 + -1.0 * d_135 + d_225 + -1.0 * d_315) / 4.0;
-  const e_val = (d_000 + -1.0 * d_090 + d_180 + -1.0 * d_270) / 4.0
+  // const b_val = (d_090 - d_270) / 2.0; // approximation
+  const b_val = (Math.sqrt(2) / 8.0) * (d_045 + d_135 - d_225 - d_315) + 0.25 * (d_090 - d_270);
+  // const c_val = (d_000 - d_180) / 2.0; // approximation
+  const c_val = (Math.sqrt(2) / 8.0) * (d_045 - d_135 - d_225 + d_315) + 0.25 * (d_000 - d_180);
+  const d_val = (d_045 - d_135 + d_225 - d_315) / 4.0;
+  const e_val = (d_000 - d_090 + d_180 - d_270) / 4.0
   
   el('calc_a').innerText = format_dev(r1(a_val));
   el('calc_b').innerText = format_dev(r1(b_val));
@@ -169,19 +177,29 @@ function plot(data, a_val, b_val, c_val, d_val, e_val) {
 
   if(show_curve){
     // Setup the curve
-    var curve = [];
+    var curve_bh = [], curve_mh = [];
     for(var i = 0; i <= 360; i++){
       var rad = to_rad(i);
       // Deviation = A + B sin ø + C cos ø + D sin 2ø + E cos 2ø
       var val = a_val + b_val * Math.sin(rad) + c_val * Math.cos(rad) + d_val * Math.sin(2*rad) + e_val * Math.cos(2*rad);
-      curve.push({x: i, y: val });
+      curve_bh.push({x: i, y: val });
+      curve_mh.push({x: fixdeg(i - val), y: val });
     }
+    curve_mh.sort(sort_by('x'));
     datasets.push({
-      data: curve,
+      data: curve_bh,
       showLine: true,
       pointRadius: 0,
       borderColor: "#D33",
     });
+    // Plot curve by magnetic
+    /*
+    datasets.push({
+      data: curve_mh,
+      showLine: true,
+      pointRadius: 0,
+      borderColor: "#33D",
+    });*/
   }
 
   if(myChart){
