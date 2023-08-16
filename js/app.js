@@ -1,5 +1,13 @@
 const ROW_COUNT = 8;
 
+function to_rad (angle) {
+  return angle * (Math.PI / 180);
+}
+
+function to_deg (angle) {
+  return angle * (180 / Math.PI);
+}
+
 
 function pad(n, width, z) {
   z = z || '0';
@@ -117,7 +125,6 @@ function calc_all() {
     a_sum += d.dev_precise;
     update_row(d, i)
   }
-  plot(data);
   // [0]=000, [1]=045, [2]=90, [3]=135, [4] = 180
   // [5]= 225,[6]=270, [7]=315
   const d_000 = data[0].dev_precise, d_045 = data[1].dev_precise, d_090 = data[2].dev_precise, d_135 = data[3].dev_precise, d_180 = data[4].dev_precise;
@@ -128,12 +135,13 @@ function calc_all() {
   const d_val = (d_045 + -1.0 * d_135 + d_225 + -1.0 * d_315) / 4.0;
   const e_val = (d_000 + -1.0 * d_090 + d_180 + -1.0 * d_270) / 4.0
   
-  
   el('calc_a').innerText = format_dev(r1(a_val));
   el('calc_b').innerText = format_dev(r1(b_val));
   el('calc_c').innerText = format_dev(r1(c_val));
   el('calc_d').innerText = format_dev(r1(d_val));
   el('calc_e').innerText = format_dev(r1(e_val));
+
+  plot(data, a_val, b_val, c_val, d_val, e_val);
 }
 
 
@@ -141,34 +149,51 @@ function el_change(event){
   calc_all();
 }
 
-function plot(data) {
+function plot(data, a_val, b_val, c_val, d_val, e_val) {
+  const show_curve = el('show_curve').checked;
   var ctx = document.getElementById("myChart");
-  var devs = [];
+  var devs = [], datasets = [];
   for (var i = 0; i < ROW_COUNT; i++) {
     devs.push({ x: data[i].h, y: data[i].dev_val});
   }
   devs.push({ x: 360, y: data[0].dev_val});
+  datasets.push({
+    label: "Deviation",
+    data: devs,
+    borderColor: "#222",
+    pointRadius: "4",
+    pointBorderColor: "#000",
+    pointBackgroundColor: "#000",
+    showLine: true
+  });
+
+  if(show_curve){
+    // Setup the curve
+    var curve = [];
+    for(var i = 0; i <= 360; i++){
+      var rad = to_rad(i);
+      // Deviation = A + B sin ø + C cos ø + D sin 2ø + E cos 2ø
+      var val = a_val + b_val * Math.sin(rad) + c_val * Math.cos(rad) + d_val * Math.sin(2*rad) + e_val * Math.cos(2*rad);
+      curve.push({x: i, y: val });
+    }
+    datasets.push({
+      data: curve,
+      showLine: true,
+      pointRadius: 0,
+      borderColor: "#D33",
+    });
+  }
+
   if(myChart){
     myChart.destroy();
   }
-
 
   myChart = new Chart(ctx, {
     type: "scatter",
 
     data: {
       labels: ["000", "045", "090", "135", "180", "225", "270", "315", "360"],
-      datasets: [
-        {
-          label: "Deviation",
-          data: devs,
-          borderColor: "#222",
-          pointRadius: "4",
-          pointBorderColor: "#000",
-          pointBackgroundColor: "#000",
-          showLine: true
-        }
-      ]
+      datasets: datasets
     },
     options: {
       plugins: {

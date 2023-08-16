@@ -31,3 +31,7 @@ table thead tr {
 h2 {
   font-size: 2em;
 }
+
+.container input {
+  min-width: 0px;
+}
