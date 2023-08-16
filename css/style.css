@@ -27,3 +27,7 @@ table thead tr {
 @media print {
   #deviation-table {page-break-before: always;}
 } 
+
+h2 {
+  font-size: 2em;
+}

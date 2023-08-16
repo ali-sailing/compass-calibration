@@ -79,11 +79,12 @@ function r1(v) {
 function r2(v) {
   return Math.round(v * 100.0) / 100.0;
 }
-function get_deviation(az_mag, hrb, text = true) {
-  var dev = hrb - Math.round(az_mag);
-  if (!text) {
-    return dev;
-  }
+function get_deviation(az_mag, hrb) {
+  var dev = hrb - az_mag;
+  return dev;
+}
+
+function format_dev(dev){
   if (dev == 0) {
     return "0";
   }
@@ -91,10 +92,13 @@ function get_deviation(az_mag, hrb, text = true) {
   return Math.abs(dev) + suffix;
 }
 
+// Not Used
+/*
 function c_to_m(item) {
   var dev = this.get_deviation(item, false);
   return this.fixdeg(item.h - dev);
 }
+*/
 
 function el(s) {
   return document.getElementById(s);
@@ -103,15 +107,33 @@ function el(s) {
 function calc_all() {
   el('errorDate').style.display = "none";
   data = [];
+  var a_sum = 0;
   for (var i = 0; i < ROW_COUNT; i++) {
     d = calc_row(i);
     if(!d){
       return;
     }
     data.push(d);
+    a_sum += d.dev_precise;
     update_row(d, i)
   }
   plot(data);
+  // [0]=000, [1]=045, [2]=90, [3]=135, [4] = 180
+  // [5]= 225,[6]=270, [7]=315
+  const d_000 = data[0].dev_precise, d_045 = data[1].dev_precise, d_090 = data[2].dev_precise, d_135 = data[3].dev_precise, d_180 = data[4].dev_precise;
+  const d_225 = data[5].dev_precise, d_270 = data[6].dev_precise, d_315 = data[7].dev_precise;
+  const a_val = a_sum / 8.0;
+  const b_val = (d_090 + -1.0 * d_270) / 2.0;
+  const c_val = (d_000 + -1.0 * d_180) / 2.0;
+  const d_val = (d_045 + -1.0 * d_135 + d_225 + -1.0 * d_315) / 4.0;
+  const e_val = (d_000 + -1.0 * d_090 + d_180 + -1.0 * d_270) / 4.0
+  
+  
+  el('calc_a').innerText = format_dev(r1(a_val));
+  el('calc_b').innerText = format_dev(r1(b_val));
+  el('calc_c').innerText = format_dev(r1(c_val));
+  el('calc_d').innerText = format_dev(r1(d_val));
+  el('calc_e').innerText = format_dev(r1(e_val));
 }
 
 
@@ -187,8 +209,7 @@ function plot(data) {
             color: "#000",
             beginAtZero: true,
             callback: function (value, index, ticks) {
-              if (value == 0) return 0;
-              return Math.abs(value) + (value < 0 ? "E" : "W");
+              return format_dev(value);
             }
           },
           grid: {
@@ -246,8 +267,9 @@ function calc_row(i) {
   //sc = SunCalc.getPosition(data.utc.toJSDate(), data.lat, data.lon);
   //data.az2 =   (180.0 * sc.azimuth / Math.PI) + 180;
   data.azmag = true_to_mag(data.az);
-  data.dev = get_deviation(data.azmag, data.hrb);
-  data.dev_val = get_deviation(data.azmag, data.hrb, false);
+  data.dev_precise = r1(get_deviation(data.azmag, data.hrb, false));
+  data.dev_val = r0(data.dev_precise);
+  data.dev = format_dev(data.dev_val);
 
   return data;
 

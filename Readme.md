@@ -4,6 +4,8 @@ A simple web application to aid in calibrating a magnetic compass using the sun.
 
 ## Version History
 
+* 2.3
+    * Add calculations for approximate coefficients of deviation
 * 2.2
     * Use WMM to calculate magnetic variation
 * 2.1 

@@ -265,15 +265,27 @@
       <canvas id="myChart" width="100%" ></canvas>
     </div>
 
+    <div class="row">
+      <div class="col-sm-12">
+        <h3>Approximate Coefficients of Deviation</h3>
+        A = <span id="calc_a"></span>
+        B = <span id="calc_b"></span>
+        C = <span id="calc_c"></span>
+        D = <span id="calc_d"></span>
+        E = <span id="calc_e"></span><br/>
+        See <a href="docs/HoMCA.pdf">Handbook of Magnetic Compass Adjustment</a> Chapter V for details.<br/>
+      </div>
+    </div>
     <p><strong>Notes:</strong><br />
       <ul>
         <li><strong>Development under progress</strong> Always check all calculations</li>
         <li>Solar angle calculations based on <a href="https://gml.noaa.gov/grad/solcalc/">NOAA Solar Calculator</a> and <a href="https://gml.noaa.gov/grad/solcalc/calcdetails.html">associated documentation</a></li>
         <li>Based on <a href="https://youtu.be/iIRLTyp8vhg?t=744">video and instructions</a> from Captain Tom Tursi</li>
-        <li>Version 2.2 (2023-08-07) Link to <a href="./v1">old version</a>
+        <li>Version 2.3 (2023-08-16) Link to <a href="./v1">v1</a> and <a href="./v21">v2.1</a>
       </ul>
       
     </p>
+  
   </div>
 
 
@@ -281,7 +293,7 @@
   <script src="js/modernizr-3.12.0.min.js"></script>
   <script src="js/noaacalc.js"></script>
   <script src="js/suncalc.js"></script>
-  <script src="js/app.js?v=22"></script>
+  <script src="js/app.js?v=23"></script>
   <script src="js/chart.umd.js"></script>
   <script src="js/magvar.js"></script>
 
